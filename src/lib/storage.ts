@@ -3,7 +3,7 @@
  * ブラウザのlocalStorageに端末内ローカル保存される
  */
 
-import type { AppData, Workout, Goals } from './types';
+import type { AppData, Workout } from './types';
 
 const STORAGE_KEY = 'workout_app_data_v1';
 

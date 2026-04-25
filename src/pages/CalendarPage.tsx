@@ -11,8 +11,6 @@ import { loadData, todayString } from '../lib/storage';
 import type { AppData } from '../lib/types';
 import styles from './CalendarPage.module.css';
 
-type CalendarValue = Date | null;
-
 export default function CalendarPage() {
   const [data, setData] = useState<AppData | null>(null);
   const [selectedDate, setSelectedDate] = useState<string>(todayString());
