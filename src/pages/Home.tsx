@@ -1,18 +1,15 @@
 /**
- * ホーム画面（Today）
- * - 今日の日付
- * - トレーニングサマリー（種目数・セット数）
- * - プロテイン進捗バー
- * - 「今日のトレーニングを記録する」ボタン
+ * ホーム画面（Today）- Firestore対応版
  */
 
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { loadData, todayString } from '../lib/storage';
+import { useAuth } from '../contexts/AuthContext';
+import { loadDataFromFirestore } from '../lib/firestore';
+import { todayString } from '../lib/storage';
 import type { AppData } from '../lib/types';
 import styles from './Home.module.css';
 
-// 日付を「2026年4月10日(金)」形式に変換
 function formatDate(dateStr: string): string {
   const d = new Date(dateStr);
   const week = ['日', '月', '火', '水', '木', '金', '土'][d.getDay()];
@@ -21,33 +18,36 @@ function formatDate(dateStr: string): string {
 
 export default function Home() {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const [data, setData] = useState<AppData | null>(null);
   const today = todayString();
 
-  // ページが表示されるたびにデータを再読み込み
   useEffect(() => {
-    setData(loadData());
-  }, []);
+    if (user) {
+      loadDataFromFirestore(user.uid).then(setData);
+    }
+  }, [user]);
 
-  // 今日のワークアウト
   const todayWorkout = data?.workouts.find((w) => w.date === today);
   const exerciseCount = todayWorkout?.exercises.length ?? 0;
   const totalSets = todayWorkout?.exercises.reduce((s, e) => s + e.sets.length, 0) ?? 0;
-
-  // プロテイン
   const todayProtein = data?.protein.find((p) => p.date === today)?.amount ?? 0;
   const proteinGoal = data?.goals.dailyProtein ?? 150;
   const proteinPct = Math.min((todayProtein / proteinGoal) * 100, 100);
 
   return (
     <div className={styles.page}>
-      {/* ヘッダー */}
+      {/* ヘッダー（ユーザー名とログアウト） */}
+      <div className={styles.topBar}>
+        <span className={styles.userName}>{user?.displayName?.split(' ')[0]}さん</span>
+        <button className={styles.logoutBtn} onClick={logout}>ログアウト</button>
+      </div>
+
       <div className={styles.header}>
         <p className={styles.dateLabel}>{formatDate(today)}</p>
         <h1 className={styles.title}>今日</h1>
       </div>
 
-      {/* トレーニングサマリーカード */}
       <div className={styles.card}>
         <p className={styles.cardTitle}>トレーニング</p>
         <div className={styles.statsRow}>
@@ -66,7 +66,6 @@ export default function Home() {
         )}
       </div>
 
-      {/* プロテインカード */}
       <div className={styles.card}>
         <p className={styles.cardTitle}>プロテイン</p>
         <div className={styles.proteinRow}>
@@ -79,7 +78,6 @@ export default function Home() {
         <p className={styles.progressLabel}>{Math.round(proteinPct)}% 達成</p>
       </div>
 
-      {/* メインボタン */}
       <button className={styles.primaryBtn} onClick={() => navigate('/workout')}>
         今日のトレーニングを記録する
       </button>

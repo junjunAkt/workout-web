@@ -1,33 +1,33 @@
 /**
- * カレンダー・履歴画面
- * - 月表示カレンダー（記録した日にマーク）
- * - 日付をクリックでその日の詳細を表示
+ * カレンダー・履歴画面 - Firestore対応版
  */
 
 import { useEffect, useMemo, useState } from 'react';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
-import { loadData, todayString } from '../lib/storage';
+import { useAuth } from '../contexts/AuthContext';
+import { loadDataFromFirestore } from '../lib/firestore';
+import { todayString } from '../lib/storage';
 import type { AppData } from '../lib/types';
 import styles from './CalendarPage.module.css';
 
 export default function CalendarPage() {
+  const { user } = useAuth();
   const [data, setData] = useState<AppData | null>(null);
   const [selectedDate, setSelectedDate] = useState<string>(todayString());
 
   useEffect(() => {
-    setData(loadData());
-  }, []);
+    if (user) {
+      loadDataFromFirestore(user.uid).then(setData);
+    }
+  }, [user]);
 
-  // 記録のある日付の集合
   const workoutDates = useMemo(() => {
     return new Set(data?.workouts.map((w) => w.date) ?? []);
   }, [data]);
 
-  // 選択日のワークアウト
   const selectedWorkout = data?.workouts.find((w) => w.date === selectedDate);
 
-  // 日付を YYYY-MM-DD 文字列に変換
   const toDateStr = (d: Date): string =>
     `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
@@ -35,7 +35,6 @@ export default function CalendarPage() {
     <div className={styles.page}>
       <h1 className={styles.title}>履歴</h1>
 
-      {/* react-calendar */}
       <div className={styles.calendarWrap}>
         <Calendar
           locale="ja-JP"
@@ -49,7 +48,6 @@ export default function CalendarPage() {
         />
       </div>
 
-      {/* 選択日の詳細 */}
       <div className={styles.detail}>
         <p className={styles.detailDate}>{selectedDate}</p>
         {selectedWorkout?.exercises.length ? (

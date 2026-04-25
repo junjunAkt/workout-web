@@ -1,41 +1,40 @@
 /**
- * トレーニング記録画面
- * - 種目名入力（過去の種目から選択可）
- * - 複数セット（重量・回数）を追加・削除
- * - 保存でlocalStorageに書き込み
+ * トレーニング記録画面 - Firestore対応版
  */
 
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { addWorkout, generateId, loadData, todayString } from '../lib/storage';
+import { useAuth } from '../contexts/AuthContext';
+import { addWorkoutToFirestore, loadDataFromFirestore } from '../lib/firestore';
+import { generateId, todayString } from '../lib/storage';
 import type { WorkoutSet } from '../lib/types';
 import styles from './Workout.module.css';
 
 export default function Workout() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [exerciseName, setExerciseName] = useState('');
   const [sets, setSets] = useState<WorkoutSet[]>([{ weight: 0, reps: 0 }]);
   const [knownExercises, setKnownExercises] = useState<string[]>([]);
   const [saved, setSaved] = useState(false);
 
-  // 過去に登録した種目名を読み込む
   useEffect(() => {
-    const data = loadData();
-    const names = new Set<string>();
-    data.workouts.forEach((w) => w.exercises.forEach((e) => names.add(e.name)));
-    setKnownExercises(Array.from(names));
-  }, []);
+    if (user) {
+      loadDataFromFirestore(user.uid).then((data) => {
+        const names = new Set<string>();
+        data.workouts.forEach((w) => w.exercises.forEach((e) => names.add(e.name)));
+        setKnownExercises(Array.from(names));
+      });
+    }
+  }, [user]);
 
-  // セット追加
   const addSet = () => setSets([...sets, { weight: 0, reps: 0 }]);
 
-  // セット削除
   const removeSet = (i: number) => {
     if (sets.length === 1) return;
     setSets(sets.filter((_, idx) => idx !== i));
   };
 
-  // セット値の更新
   const updateSet = (i: number, field: 'weight' | 'reps', val: string) => {
     const num = parseFloat(val) || 0;
     const next = [...sets];
@@ -43,22 +42,18 @@ export default function Workout() {
     setSets(next);
   };
 
-  // 保存
-  const handleSave = () => {
-    if (!exerciseName.trim()) {
-      alert('種目名を入力してください');
-      return;
-    }
+  const handleSave = async () => {
+    if (!user) return;
+    if (!exerciseName.trim()) { alert('種目名を入力してください'); return; }
     const validSets = sets.filter((s) => s.weight > 0 || s.reps > 0);
-    if (validSets.length === 0) {
-      alert('重量または回数を入力してください');
-      return;
-    }
-    addWorkout({
+    if (validSets.length === 0) { alert('重量または回数を入力してください'); return; }
+
+    await addWorkoutToFirestore(user.uid, {
       id: generateId(),
       date: todayString(),
       exercises: [{ name: exerciseName.trim(), sets: validSets }],
     });
+
     setSaved(true);
     setTimeout(() => {
       setExerciseName('');
@@ -72,7 +67,6 @@ export default function Workout() {
     <div className={styles.page}>
       <h1 className={styles.title}>記録</h1>
 
-      {/* 種目名入力 */}
       <label className={styles.label}>種目名</label>
       <input
         className={styles.input}
@@ -81,21 +75,16 @@ export default function Workout() {
         placeholder="例: ベンチプレス"
       />
 
-      {/* 過去の種目チップ */}
       {knownExercises.length > 0 && (
         <div className={styles.chips}>
           {knownExercises.map((name) => (
-            <button
-              key={name}
-              className={styles.chip}
-              onClick={() => setExerciseName(name)}>
+            <button key={name} className={styles.chip} onClick={() => setExerciseName(name)}>
               {name}
             </button>
           ))}
         </div>
       )}
 
-      {/* セット入力 */}
       <label className={styles.label} style={{ marginTop: 24 }}>セット</label>
       {sets.map((set, i) => (
         <div key={i} className={styles.setRow}>
@@ -122,21 +111,12 @@ export default function Workout() {
             />
             <span className={styles.setUnit}>回</span>
           </div>
-          <button
-            className={styles.removeBtn}
-            onClick={() => removeSet(i)}
-            disabled={sets.length === 1}>
-            ✕
-          </button>
+          <button className={styles.removeBtn} onClick={() => removeSet(i)} disabled={sets.length === 1}>✕</button>
         </div>
       ))}
 
-      {/* セット追加ボタン */}
-      <button className={styles.addSetBtn} onClick={addSet}>
-        ＋ セットを追加
-      </button>
+      <button className={styles.addSetBtn} onClick={addSet}>＋ セットを追加</button>
 
-      {/* 保存ボタン */}
       <button
         className={`${styles.saveBtn} ${saved ? styles.saveBtnDone : ''}`}
         onClick={handleSave}>
