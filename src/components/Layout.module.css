@@ -1,0 +1,58 @@
+/* レイアウト・タブバーのスタイル */
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+}
+
+/* メインコンテンツ（タブバー分の余白を確保） */
+.main {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 72px; /* タブバーの高さ分 */
+}
+
+/* 下部タブバー */
+.tabBar {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 480px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border-top: 1px solid var(--border);
+  z-index: 100;
+}
+
+.tabItem {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  text-decoration: none;
+  color: var(--text-muted);
+  padding: 8px 4px;
+  transition: color 0.15s;
+}
+
+.tabItemActive {
+  color: var(--accent);
+}
+
+.tabIcon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.tabLabel {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}

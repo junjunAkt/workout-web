@@ -1,0 +1,115 @@
+/* 進捗グラフ画面 */
+
+.page {
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.title {
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  border: 1.5px solid var(--border);
+  background: #fff;
+  color: var(--text);
+  font-size: 13px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  transition: all 0.15s;
+}
+
+.chipActive {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+.chartCard {
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 16px;
+}
+
+.chartCaption {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+
+.goalCard {
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 16px;
+}
+
+.cardTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.currentGoal {
+  font-size: 15px;
+  color: var(--text);
+  margin-bottom: 10px;
+}
+
+.goalRow {
+  display: flex;
+  gap: 8px;
+}
+
+.goalInput {
+  flex: 1;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 15px;
+  color: var(--text);
+  background: #fff;
+}
+
+.goalInput:focus {
+  border-color: var(--accent);
+}
+
+.goalBtn {
+  background: var(--accent);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 20px;
+  border-radius: 10px;
+}
+
+.goalBtn:hover {
+  opacity: 0.9;
+}
+
+.empty {
+  font-size: 14px;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 32px 0;
+  white-space: pre-line;
+  line-height: 1.8;
+}

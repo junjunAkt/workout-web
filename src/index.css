@@ -1,0 +1,54 @@
+/* グローバルスタイル */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --accent: #FF6B35;
+  --accent-light: #FFE8DD;
+  --bg: #FFFFFF;
+  --surface: #F7F8FA;
+  --border: #E5E7EB;
+  --text: #1F2937;
+  --text-secondary: #6B7280;
+  --text-muted: #9CA3AF;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Hiragino Kaku Gothic ProN',
+    'Noto Sans JP', sans-serif;
+  background: #F7F8FA;
+  color: var(--text);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* スマホでも見やすいように最大幅を制限 */
+#root {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  position: relative;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+}
+
+input {
+  font-family: inherit;
+  outline: none;
+}
+
+/* スクロールバーを細く */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
