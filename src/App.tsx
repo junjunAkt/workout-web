@@ -5,6 +5,7 @@
 
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { ReadingProvider } from './contexts/ReadingContext';
 import Layout from './components/Layout';
 import Login from './pages/Login';
 import Home from './pages/Home';
@@ -12,6 +13,8 @@ import Workout from './pages/Workout';
 import CalendarPage from './pages/CalendarPage';
 import Progress from './pages/Progress';
 import Protein from './pages/Protein';
+import ReadingHome from './pages/reading/ReadingHome';
+import BookDetail from './pages/reading/BookDetail';
 
 // ログイン状態によって表示を切り替えるコンポーネント
 function AppRoutes() {
@@ -39,15 +42,19 @@ function AppRoutes() {
 
   // ログイン済みならメイン画面を表示
   return (
-    <Routes>
-      <Route element={<Layout />}>
-        <Route path="/"         element={<Home />} />
-        <Route path="/workout"  element={<Workout />} />
-        <Route path="/calendar" element={<CalendarPage />} />
-        <Route path="/progress" element={<Progress />} />
-        <Route path="/protein"  element={<Protein />} />
-      </Route>
-    </Routes>
+    <ReadingProvider>
+      <Routes>
+        <Route element={<Layout />}>
+          <Route path="/"         element={<Home />} />
+          <Route path="/workout"  element={<Workout />} />
+          <Route path="/calendar" element={<CalendarPage />} />
+          <Route path="/progress" element={<Progress />} />
+          <Route path="/protein"  element={<Protein />} />
+          <Route path="/reading"  element={<ReadingHome />} />
+          <Route path="/reading/book/:id" element={<BookDetail />} />
+        </Route>
+      </Routes>
+    </ReadingProvider>
   );
 }
 
