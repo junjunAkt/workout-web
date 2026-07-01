@@ -9,9 +9,20 @@ export type Book = {
   author?: string;
   genre?: string;
   totalPages?: number;
+  coverUrl?: string;
   rating?: 1 | 2 | 3 | 4 | 5;
   status: 'reading' | 'finished';
   createdAt: number;
+};
+
+// Google Books APIの検索結果
+export type BookSearchResult = {
+  title: string;
+  authors: string[];
+  genre?: string;
+  pageCount?: number;
+  coverUrl?: string;
+  description?: string;
 };
 
 // 1回の読書セッション

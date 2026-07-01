@@ -6,7 +6,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useReading } from '../../contexts/ReadingContext';
-import type { Book } from '../../lib/reading-types';
+import type { Book, BookSearchResult } from '../../lib/reading-types';
+import { searchBooks } from '../../lib/book-search';
 import styles from './ReadingHome.module.css';
 
 type Filter = 'all' | 'reading' | 'finished';
@@ -185,7 +186,11 @@ export default function ReadingHome() {
               className={styles.bookCard}
               onClick={() => navigate(`/reading/book/${book.id}`)}
             >
-              <div className={styles.bookIcon}>📖</div>
+              {book.coverUrl ? (
+                <img src={book.coverUrl} alt="" className={styles.bookCover} />
+              ) : (
+                <div className={styles.bookIcon}>📖</div>
+              )}
               <div className={styles.bookInfo}>
                 <div className={styles.bookTitle}>{book.title}</div>
                 <div className={styles.bookMeta}>
@@ -295,7 +300,7 @@ function BookSelectorModal({
   );
 }
 
-// ===== 本の登録モーダル =====
+// ===== 本の登録モーダル（検索機能付き） =====
 function BookFormModal({
   onSave,
   onClose,
@@ -305,13 +310,48 @@ function BookFormModal({
     author?: string;
     genre?: string;
     totalPages?: number;
+    coverUrl?: string;
   }) => void;
   onClose: () => void;
 }) {
+  const [step, setStep] = useState<'search' | 'form'>('search');
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState<BookSearchResult[]>([]);
+  const [searching, setSearching] = useState(false);
+
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
   const [genre, setGenre] = useState('');
   const [totalPages, setTotalPages] = useState('');
+  const [coverUrl, setCoverUrl] = useState('');
+
+  // 検索実行
+  const handleSearch = async () => {
+    if (!query.trim()) return;
+    setSearching(true);
+    try {
+      const data = await searchBooks(query);
+      setResults(data);
+    } catch {
+      setResults([]);
+    }
+    setSearching(false);
+  };
+
+  // 検索結果を選択してフォームに反映
+  const handleSelectResult = (result: BookSearchResult) => {
+    setTitle(result.title);
+    setAuthor(result.authors.join(', '));
+    setGenre(result.genre ?? '');
+    setTotalPages(result.pageCount ? String(result.pageCount) : '');
+    setCoverUrl(result.coverUrl ?? '');
+    setStep('form');
+  };
+
+  // 手動入力に切り替え
+  const handleManualEntry = () => {
+    setStep('form');
+  };
 
   const handleSubmit = () => {
     if (!title.trim()) return;
@@ -320,62 +360,142 @@ function BookFormModal({
       author: author.trim() || undefined,
       genre: genre.trim() || undefined,
       totalPages: totalPages ? Number(totalPages) : undefined,
+      coverUrl: coverUrl || undefined,
     });
   };
 
   return (
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-        <div className={styles.modalTitle}>新しい本を登録</div>
-        <div className={styles.formGroup}>
-          <label className={styles.label}>本の名前 *</label>
-          <input
-            className={styles.input}
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="例: 吾輩は猫である"
-            autoFocus
-          />
-        </div>
-        <div className={styles.formGroup}>
-          <label className={styles.label}>著者</label>
-          <input
-            className={styles.input}
-            value={author}
-            onChange={(e) => setAuthor(e.target.value)}
-            placeholder="例: 夏目漱石"
-          />
-        </div>
-        <div className={styles.formGroup}>
-          <label className={styles.label}>ジャンル</label>
-          <input
-            className={styles.input}
-            value={genre}
-            onChange={(e) => setGenre(e.target.value)}
-            placeholder="例: 小説"
-          />
-        </div>
-        <div className={styles.formGroup}>
-          <label className={styles.label}>全体ページ数</label>
-          <input
-            className={styles.input}
-            type="number"
-            value={totalPages}
-            onChange={(e) => setTotalPages(e.target.value)}
-            placeholder="例: 320"
-            min="1"
-          />
-        </div>
-        <button
-          className={styles.submitBtn}
-          onClick={handleSubmit}
-          disabled={!title.trim()}
-        >
-          登録して読書開始
-        </button>
-        <button className={styles.cancelBtn} onClick={onClose}>
-          キャンセル
-        </button>
+        {step === 'search' ? (
+          <>
+            <div className={styles.modalTitle}>本を検索</div>
+            <div className={styles.searchRow}>
+              <input
+                className={styles.input}
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                placeholder="本のタイトルや著者名で検索..."
+                autoFocus
+              />
+              <button
+                className={styles.searchBtn}
+                onClick={handleSearch}
+                disabled={searching || !query.trim()}
+              >
+                {searching ? '...' : '検索'}
+              </button>
+            </div>
+
+            {results.length > 0 && (
+              <div className={styles.searchResults}>
+                {results.map((r, i) => (
+                  <button
+                    key={i}
+                    className={styles.searchResultItem}
+                    onClick={() => handleSelectResult(r)}
+                  >
+                    {r.coverUrl ? (
+                      <img
+                        src={r.coverUrl}
+                        alt=""
+                        className={styles.searchResultCover}
+                      />
+                    ) : (
+                      <div className={styles.searchResultNoCover}>📖</div>
+                    )}
+                    <div className={styles.searchResultInfo}>
+                      <div className={styles.searchResultTitle}>
+                        {r.title}
+                      </div>
+                      <div className={styles.searchResultMeta}>
+                        {r.authors.join(', ') || '著者不明'}
+                        {r.pageCount ? ` / ${r.pageCount}p` : ''}
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {results.length === 0 && query && !searching && (
+              <div className={styles.emptyMessage}>
+                見つかりませんでした
+              </div>
+            )}
+
+            <button className={styles.newBookBtn} onClick={handleManualEntry}>
+              手動で入力する
+            </button>
+            <button className={styles.cancelBtn} onClick={onClose}>
+              キャンセル
+            </button>
+          </>
+        ) : (
+          <>
+            <div className={styles.modalTitle}>本の情報を確認</div>
+
+            {coverUrl && (
+              <div className={styles.formCoverPreview}>
+                <img src={coverUrl} alt="" className={styles.formCoverImg} />
+              </div>
+            )}
+
+            <div className={styles.formGroup}>
+              <label className={styles.label}>本の名前 *</label>
+              <input
+                className={styles.input}
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="例: 吾輩は猫である"
+                autoFocus
+              />
+            </div>
+            <div className={styles.formGroup}>
+              <label className={styles.label}>著者</label>
+              <input
+                className={styles.input}
+                value={author}
+                onChange={(e) => setAuthor(e.target.value)}
+                placeholder="例: 夏目漱石"
+              />
+            </div>
+            <div className={styles.formGroup}>
+              <label className={styles.label}>ジャンル</label>
+              <input
+                className={styles.input}
+                value={genre}
+                onChange={(e) => setGenre(e.target.value)}
+                placeholder="例: 小説"
+              />
+            </div>
+            <div className={styles.formGroup}>
+              <label className={styles.label}>全体ページ数</label>
+              <input
+                className={styles.input}
+                type="number"
+                value={totalPages}
+                onChange={(e) => setTotalPages(e.target.value)}
+                placeholder="例: 320"
+                min="1"
+              />
+            </div>
+            <button
+              className={styles.submitBtn}
+              onClick={handleSubmit}
+              disabled={!title.trim()}
+            >
+              登録して読書開始
+            </button>
+            <button
+              className={styles.cancelBtn}
+              onClick={() => setStep('search')}
+            >
+              検索に戻る
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

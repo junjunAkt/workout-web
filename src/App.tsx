@@ -1,7 +1,7 @@
 /**
  * アプリのルーティング設定
- * ログイン状態に応じてログイン画面 or メイン画面を表示する
- * /reading 以下は読書管理アプリ（独立動作、ログイン不要）
+ * /reading 以下は読書管理アプリ（独立動作）
+ * それ以外は筋トレ記録アプリ
  */
 
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
@@ -53,7 +53,7 @@ function WorkoutRoutes() {
   );
 }
 
-// 読書管理アプリ（独立動作、ログイン不要）
+// 読書管理アプリ（独立動作、Googleログインでデバイス間同期）
 function ReadingRoutes() {
   return (
     <ReadingProvider>
@@ -70,20 +70,12 @@ function ReadingRoutes() {
 export default function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route
-          path="/reading/*"
-          element={<ReadingRoutes />}
-        />
-        <Route
-          path="/*"
-          element={
-            <AuthProvider>
-              <WorkoutRoutes />
-            </AuthProvider>
-          }
-        />
-      </Routes>
+      <AuthProvider>
+        <Routes>
+          <Route path="/reading/*" element={<ReadingRoutes />} />
+          <Route path="/*" element={<WorkoutRoutes />} />
+        </Routes>
+      </AuthProvider>
     </BrowserRouter>
   );
 }

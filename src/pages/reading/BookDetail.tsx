@@ -125,11 +125,16 @@ export default function BookDetail() {
 
       {/* 本の情報 */}
       <div className={styles.bookHeader}>
-        <div className={styles.bookTitle}>{book.title}</div>
-        <div className={styles.bookMeta}>
-          {[book.author, book.genre, book.totalPages ? `${book.totalPages}ページ` : null]
-            .filter(Boolean)
-            .join(' / ') || '情報なし'}
+        {book.coverUrl && (
+          <img src={book.coverUrl} alt="" className={styles.bookCoverImg} />
+        )}
+        <div>
+          <div className={styles.bookTitle}>{book.title}</div>
+          <div className={styles.bookMeta}>
+            {[book.author, book.genre, book.totalPages ? `${book.totalPages}ページ` : null]
+              .filter(Boolean)
+              .join(' / ') || '情報なし'}
+          </div>
         </div>
       </div>
 

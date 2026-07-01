@@ -1,7 +1,7 @@
 /**
  * 読書データ管理Context
- * UI側はこのContextを通じてデータにアクセスする。
- * ストレージの実体（localStorage / Firestore）を意識しない。
+ * ログイン時はFirestore、未ログイン時はlocalStorageを使用する。
+ * UI側はストレージの実体を意識しない。
  */
 
 import {
@@ -10,9 +10,12 @@ import {
   useState,
   useEffect,
   useCallback,
+  useMemo,
 } from 'react';
 import type { Book, ReadingSession, ActiveTimer } from '../lib/reading-types';
-import { readingStorage } from '../lib/reading-storage';
+import type { ReadingStorage } from '../lib/reading-storage';
+import { createReadingStorage } from '../lib/reading-storage';
+import { useAuth } from './AuthContext';
 
 type ReadingContextType = {
   books: Book[];
@@ -24,6 +27,7 @@ type ReadingContextType = {
     author?: string;
     genre?: string;
     totalPages?: number;
+    coverUrl?: string;
   }): Promise<Book>;
   updateBook(book: Book): Promise<void>;
   deleteBook(id: string): Promise<void>;
@@ -51,22 +55,30 @@ function generateId(): string {
 }
 
 export function ReadingProvider({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
   const [books, setBooks] = useState<Book[]>([]);
   const [activeTimer, setActiveTimer] = useState<ActiveTimer | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // 初期ロード（本一覧とタイマー状態を復元）
+  // ログイン状態に応じてストレージを切り替え
+  const storage: ReadingStorage = useMemo(
+    () => createReadingStorage(user?.uid),
+    [user?.uid],
+  );
+
+  // ユーザーが変わったらデータを再読み込み
   useEffect(() => {
+    setLoading(true);
     (async () => {
       const [loadedBooks, timer] = await Promise.all([
-        readingStorage.getBooks(),
-        readingStorage.getActiveTimer(),
+        storage.getBooks(),
+        storage.getActiveTimer(),
       ]);
       setBooks(loadedBooks);
       setActiveTimer(timer);
       setLoading(false);
     })();
-  }, []);
+  }, [storage]);
 
   const addBook = useCallback(
     async (data: {
@@ -74,6 +86,7 @@ export function ReadingProvider({ children }: { children: React.ReactNode }) {
       author?: string;
       genre?: string;
       totalPages?: number;
+      coverUrl?: string;
     }) => {
       const book: Book = {
         ...data,
@@ -81,33 +94,42 @@ export function ReadingProvider({ children }: { children: React.ReactNode }) {
         status: 'reading',
         createdAt: Date.now(),
       };
-      await readingStorage.saveBook(book);
+      await storage.saveBook(book);
       setBooks((prev) => [...prev, book]);
       return book;
     },
-    [],
+    [storage],
   );
 
-  const updateBook = useCallback(async (book: Book) => {
-    await readingStorage.saveBook(book);
-    setBooks((prev) => prev.map((b) => (b.id === book.id ? book : b)));
-  }, []);
+  const updateBook = useCallback(
+    async (book: Book) => {
+      await storage.saveBook(book);
+      setBooks((prev) => prev.map((b) => (b.id === book.id ? book : b)));
+    },
+    [storage],
+  );
 
-  const deleteBook = useCallback(async (id: string) => {
-    await readingStorage.deleteBook(id);
-    setBooks((prev) => prev.filter((b) => b.id !== id));
-  }, []);
+  const deleteBook = useCallback(
+    async (id: string) => {
+      await storage.deleteBook(id);
+      setBooks((prev) => prev.filter((b) => b.id !== id));
+    },
+    [storage],
+  );
 
-  const startTimer = useCallback(async (bookId: string) => {
-    const timer: ActiveTimer = { bookId, startTime: Date.now() };
-    await readingStorage.saveActiveTimer(timer);
-    setActiveTimer(timer);
-  }, []);
+  const startTimer = useCallback(
+    async (bookId: string) => {
+      const timer: ActiveTimer = { bookId, startTime: Date.now() };
+      await storage.saveActiveTimer(timer);
+      setActiveTimer(timer);
+    },
+    [storage],
+  );
 
   const stopTimer = useCallback(async () => {
     if (!activeTimer) throw new Error('タイマーが動作していません');
     const endTime = Date.now();
-    await readingStorage.clearActiveTimer();
+    await storage.clearActiveTimer();
     const result = {
       bookId: activeTimer.bookId,
       startTime: activeTimer.startTime,
@@ -115,7 +137,7 @@ export function ReadingProvider({ children }: { children: React.ReactNode }) {
     };
     setActiveTimer(null);
     return result;
-  }, [activeTimer]);
+  }, [activeTimer, storage]);
 
   const saveSession = useCallback(
     async (data: Omit<ReadingSession, 'id' | 'createdAt'>) => {
@@ -124,26 +146,35 @@ export function ReadingProvider({ children }: { children: React.ReactNode }) {
         id: generateId(),
         createdAt: Date.now(),
       };
-      await readingStorage.saveSession(session);
+      await storage.saveSession(session);
     },
-    [],
+    [storage],
   );
 
-  const getSessionsForBook = useCallback(async (bookId: string) => {
-    return readingStorage.getSessions(bookId);
-  }, []);
+  const getSessionsForBook = useCallback(
+    async (bookId: string) => {
+      return storage.getSessions(bookId);
+    },
+    [storage],
+  );
 
   const getAllSessions = useCallback(async () => {
-    return readingStorage.getSessions();
-  }, []);
+    return storage.getSessions();
+  }, [storage]);
 
-  const updateSession = useCallback(async (session: ReadingSession) => {
-    await readingStorage.updateSession(session);
-  }, []);
+  const updateSession = useCallback(
+    async (session: ReadingSession) => {
+      await storage.updateSession(session);
+    },
+    [storage],
+  );
 
-  const deleteSession = useCallback(async (id: string) => {
-    await readingStorage.deleteSession(id);
-  }, []);
+  const deleteSession = useCallback(
+    async (id: string) => {
+      await storage.deleteSession(id);
+    },
+    [storage],
+  );
 
   return (
     <ReadingContext.Provider
