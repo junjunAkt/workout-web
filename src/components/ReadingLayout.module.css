@@ -1,0 +1,34 @@
+/* 読書管理アプリ専用レイアウト */
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 20px;
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.headerIcon {
+  font-size: 22px;
+}
+
+.headerTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.main {
+  flex: 1;
+  overflow-y: auto;
+}

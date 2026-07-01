@@ -13,7 +13,6 @@ const navItems = [
   { to: '/calendar', label: 'カレンダー',   icon: '📅' },
   { to: '/progress', label: '進捗',         icon: '📈' },
   { to: '/protein',  label: 'プロテイン',   icon: '💊' },
-  { to: '/reading',  label: '読書',         icon: '📚' },
 ];
 
 export default function Layout() {
