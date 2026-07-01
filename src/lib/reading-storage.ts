@@ -4,6 +4,8 @@
  * 現在はLocalStorageAdapterを使用し、将来FirestoreAdapterに差し替え可能。
  */
 
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { db } from './firebase';
 import type { Book, ReadingSession, ActiveTimer } from './reading-types';
 
 // ストレージインターフェース
@@ -105,5 +107,122 @@ export class LocalStorageAdapter implements ReadingStorage {
   }
 }
 
-// デフォルトのストレージインスタンス
-export const readingStorage: ReadingStorage = new LocalStorageAdapter();
+// Firestoreに保存するデータの形
+type ReadingData = {
+  books: Book[];
+  sessions: ReadingSession[];
+  activeTimer: ActiveTimer | null;
+};
+
+// Firestore実装（ログイン時に使用、デバイス間同期対応）
+export class FirestoreReadingAdapter implements ReadingStorage {
+  private userId: string;
+
+  constructor(userId: string) {
+    this.userId = userId;
+  }
+
+  private async loadAll(): Promise<ReadingData> {
+    try {
+      const ref = doc(db, 'readingUsers', this.userId);
+      const snap = await getDoc(ref);
+      if (!snap.exists()) return { books: [], sessions: [], activeTimer: null };
+      const data = snap.data() as ReadingData;
+      return {
+        books: data.books ?? [],
+        sessions: data.sessions ?? [],
+        activeTimer: data.activeTimer ?? null,
+      };
+    } catch (e) {
+      console.error('読書データ読み込みエラー', e);
+      return { books: [], sessions: [], activeTimer: null };
+    }
+  }
+
+  private async saveAll(data: ReadingData): Promise<void> {
+    try {
+      const ref = doc(db, 'readingUsers', this.userId);
+      await setDoc(ref, data);
+    } catch (e) {
+      console.error('読書データ保存エラー', e);
+    }
+  }
+
+  async getBooks(): Promise<Book[]> {
+    const data = await this.loadAll();
+    return data.books;
+  }
+
+  async getBook(id: string): Promise<Book | null> {
+    const data = await this.loadAll();
+    return data.books.find((b) => b.id === id) ?? null;
+  }
+
+  async saveBook(book: Book): Promise<void> {
+    const data = await this.loadAll();
+    const idx = data.books.findIndex((b) => b.id === book.id);
+    if (idx >= 0) {
+      data.books[idx] = book;
+    } else {
+      data.books.push(book);
+    }
+    await this.saveAll(data);
+  }
+
+  async deleteBook(id: string): Promise<void> {
+    const data = await this.loadAll();
+    data.books = data.books.filter((b) => b.id !== id);
+    await this.saveAll(data);
+  }
+
+  async getSessions(bookId?: string): Promise<ReadingSession[]> {
+    const data = await this.loadAll();
+    return bookId
+      ? data.sessions.filter((s) => s.bookId === bookId)
+      : data.sessions;
+  }
+
+  async saveSession(session: ReadingSession): Promise<void> {
+    const data = await this.loadAll();
+    data.sessions.push(session);
+    await this.saveAll(data);
+  }
+
+  async updateSession(session: ReadingSession): Promise<void> {
+    const data = await this.loadAll();
+    const idx = data.sessions.findIndex((s) => s.id === session.id);
+    if (idx >= 0) {
+      data.sessions[idx] = session;
+      await this.saveAll(data);
+    }
+  }
+
+  async deleteSession(id: string): Promise<void> {
+    const data = await this.loadAll();
+    data.sessions = data.sessions.filter((s) => s.id !== id);
+    await this.saveAll(data);
+  }
+
+  async getActiveTimer(): Promise<ActiveTimer | null> {
+    const data = await this.loadAll();
+    return data.activeTimer;
+  }
+
+  async saveActiveTimer(timer: ActiveTimer): Promise<void> {
+    const data = await this.loadAll();
+    data.activeTimer = timer;
+    await this.saveAll(data);
+  }
+
+  async clearActiveTimer(): Promise<void> {
+    const data = await this.loadAll();
+    data.activeTimer = null;
+    await this.saveAll(data);
+  }
+}
+
+// ストレージインスタンスを生成するファクトリ関数
+export function createReadingStorage(userId?: string): ReadingStorage {
+  if (userId) return new FirestoreReadingAdapter(userId);
+  return new LocalStorageAdapter();
+}

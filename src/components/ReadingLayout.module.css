@@ -9,13 +9,19 @@
 .header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 16px 20px;
+  justify-content: space-between;
+  padding: 14px 20px;
   background: #fff;
   border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
   z-index: 50;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .headerIcon {
@@ -28,7 +34,92 @@
   color: var(--text);
 }
 
+.logoutBtn {
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
+.logoutBtn:active {
+  background: var(--surface);
+}
+
 .main {
   flex: 1;
   overflow-y: auto;
+}
+
+/* ===== ローディング ===== */
+.loadingPage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100dvh;
+}
+
+.loadingIcon {
+  font-size: 32px;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* ===== ログイン画面 ===== */
+.loginPage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  padding: 24px;
+  background: var(--surface);
+}
+
+.loginContent {
+  text-align: center;
+  max-width: 320px;
+}
+
+.loginIcon {
+  font-size: 56px;
+  margin-bottom: 16px;
+}
+
+.loginTitle {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 12px;
+}
+
+.loginDesc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin-bottom: 32px;
+}
+
+.googleBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px 24px;
+  background: #5B7B6A;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  border-radius: 12px;
+  transition: background 0.15s;
+}
+
+.googleBtn:active {
+  background: #4A6758;
 }
