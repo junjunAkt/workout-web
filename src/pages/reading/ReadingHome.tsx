@@ -318,6 +318,8 @@ function BookFormModal({
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<BookSearchResult[]>([]);
   const [searching, setSearching] = useState(false);
+  const [searchError, setSearchError] = useState('');
+  const [searched, setSearched] = useState(false);
 
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
@@ -329,13 +331,19 @@ function BookFormModal({
   const handleSearch = async () => {
     if (!query.trim()) return;
     setSearching(true);
+    setSearchError('');
+    setSearched(false);
     try {
       const data = await searchBooks(query);
       setResults(data);
-    } catch {
+    } catch (e) {
       setResults([]);
+      setSearchError(
+        e instanceof Error ? e.message : '検索中にエラーが発生しました',
+      );
     }
     setSearching(false);
+    setSearched(true);
   };
 
   // 検索結果を選択してフォームに反映
@@ -419,7 +427,10 @@ function BookFormModal({
               </div>
             )}
 
-            {results.length === 0 && query && !searching && (
+            {searchError && (
+              <div className={styles.errorMessage}>{searchError}</div>
+            )}
+            {results.length === 0 && searched && !searching && !searchError && (
               <div className={styles.emptyMessage}>
                 見つかりませんでした
               </div>
