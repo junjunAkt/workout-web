@@ -1,6 +1,6 @@
 # Workout & Reading Web App
 
-筋トレ記録 + 読書管理ができるWebアプリケーション。
+筋トレ記録と読書管理、2つの独立したWebアプリケーション。
 
 ## 起動方法
 
@@ -9,11 +9,16 @@ npm install
 npm run dev
 ```
 
-ブラウザで `http://localhost:5173` を開く。
+## アプリ一覧
 
-## 読書管理機能
+| アプリ | URL | 説明 |
+|--------|-----|------|
+| 筋トレ記録 | `/` | ログインして筋トレ・栄養を管理 |
+| 読書管理 | `/reading` | ログイン不要で読書を記録 |
 
-下部ナビゲーションの「読書」タブから利用可能。
+## 読書管理アプリ
+
+`/reading` にアクセスすると利用可能。筋トレアプリとは完全に独立して動作し、ログイン不要。
 
 ### 主な機能
 - **本の登録**: タイトル・著者・ジャンル・ページ数を登録
@@ -30,7 +35,7 @@ npm run dev
 - Vite + React + TypeScript
 - CSS Modules
 - react-router-dom
-- Firebase Authentication（ログイン機能）
+- Firebase Authentication（筋トレアプリのログイン機能）
 - localStorage（読書データ保存、第一段階）
 
 ## Firebase Firestore 連携を追加する場合の手順
