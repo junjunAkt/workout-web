@@ -1,6 +1,5 @@
 /**
  * Google Books APIを使った本の検索
- * ブラウザから直接APIを呼び出す（APIキー不要）
  */
 
 import type { BookSearchResult } from './reading-types';
@@ -27,7 +26,9 @@ export async function searchBooks(query: string): Promise<BookSearchResult[]> {
   if (!query.trim()) return [];
 
   const encoded = encodeURIComponent(query.trim());
-  const url = `https://www.googleapis.com/books/v1/volumes?q=${encoded}&maxResults=10&printType=books`;
+  const apiKey = import.meta.env.VITE_GOOGLE_BOOKS_API_KEY;
+  const keyParam = apiKey ? `&key=${apiKey}` : '';
+  const url = `https://www.googleapis.com/books/v1/volumes?q=${encoded}&maxResults=10&printType=books${keyParam}`;
 
   const res = await fetch(url);
 
