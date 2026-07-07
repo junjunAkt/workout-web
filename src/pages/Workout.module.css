@@ -21,6 +21,16 @@
   display: block;
 }
 
+.exerciseRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.exerciseRow .input {
+  flex: 1;
+}
+
 .input {
   width: 100%;
   border: 1.5px solid var(--border);
@@ -34,6 +44,23 @@
 
 .input:focus {
   border-color: var(--accent);
+}
+
+.videoIconBtn {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: var(--accent-light);
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: transform 0.1s;
+}
+
+.videoIconBtn:active {
+  transform: scale(0.95);
 }
 
 /* 過去の種目チップ */
@@ -163,4 +190,55 @@
 
 .saveBtnDone {
   background: #10B981;
+}
+
+/* 動画モーダル */
+.videoOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.videoModal {
+  background: #000;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 480px;
+  overflow: hidden;
+}
+
+.videoModalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: #1a1a1a;
+}
+
+.videoModalTitle {
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.videoCloseBtn {
+  background: transparent;
+  color: #fff;
+  font-size: 18px;
+  padding: 4px 8px;
+}
+
+.videoIframe {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: none;
+  display: block;
 }

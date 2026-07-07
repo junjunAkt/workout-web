@@ -1,0 +1,246 @@
+.page {
+  padding: 24px 16px;
+}
+
+.backBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 4px 0;
+  margin-bottom: 16px;
+}
+
+.header {
+  margin-bottom: 24px;
+}
+
+.categoryBadge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--accent-light);
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.memo {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.empty {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 40px 0;
+  font-size: 14px;
+}
+
+/* 動画セクション */
+.videoSection {
+  margin-bottom: 24px;
+}
+
+.sectionTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 10px;
+}
+
+.videoWrapper {
+  margin-bottom: 8px;
+}
+
+.videoIframe {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: none;
+  border-radius: 12px;
+}
+
+.removeVideoBtn {
+  display: block;
+  margin-top: 8px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 0;
+}
+
+.removeVideoBtn:active {
+  color: #EF4444;
+}
+
+.videoEmpty {
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.videoInputRow {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.videoInput {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  font-size: 14px;
+  background: #fff;
+  color: var(--text);
+  min-width: 0;
+}
+
+.videoInput:focus {
+  border-color: var(--accent);
+}
+
+.videoSaveBtn {
+  padding: 10px 16px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: 10px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.videoSaveBtn:disabled {
+  background: #ccc;
+}
+
+.videoError {
+  color: #EF4444;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.youtubeSearchBtn {
+  width: 100%;
+  padding: 10px;
+  background: transparent;
+  border: 1.5px solid #EF4444;
+  color: #EF4444;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 10px;
+}
+
+/* 編集 */
+.editToggle {
+  width: 100%;
+  padding: 12px;
+  background: var(--surface);
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 10px;
+  margin-bottom: 16px;
+}
+
+.editForm {
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.formGroup {
+  margin-bottom: 14px;
+}
+
+.label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  font-size: 15px;
+  background: #fff;
+  color: var(--text);
+}
+
+.input:focus {
+  border-color: var(--accent);
+}
+
+.textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  font-size: 14px;
+  background: #fff;
+  color: var(--text);
+  resize: vertical;
+  min-height: 80px;
+  font-family: inherit;
+  line-height: 1.6;
+}
+
+.textarea:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.categoryPicker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.categoryBtn {
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #fff;
+  color: var(--text-secondary);
+  transition: all 0.15s;
+}
+
+.categoryBtnActive {
+  background: var(--accent);
+  color: #fff;
+}
+
+.saveBtn {
+  width: 100%;
+  padding: 14px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  border-radius: 12px;
+}
+
+.saveBtn:disabled {
+  background: #ccc;
+}

@@ -1,13 +1,12 @@
-/**
- * トレーニング記録画面 - Firestore対応版
- */
-
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { addWorkoutToFirestore, loadDataFromFirestore } from '../lib/firestore';
+import { loadExerciseMasters } from '../lib/exercise-storage';
+import { extractVideoId } from '../lib/youtube';
 import { generateId, todayString } from '../lib/storage';
 import type { WorkoutSet } from '../lib/types';
+import type { ExerciseMaster } from '../lib/exercise-types';
 import styles from './Workout.module.css';
 
 export default function Workout() {
@@ -16,17 +15,22 @@ export default function Workout() {
   const [exerciseName, setExerciseName] = useState('');
   const [sets, setSets] = useState<WorkoutSet[]>([{ weight: 0, reps: 0 }]);
   const [knownExercises, setKnownExercises] = useState<string[]>([]);
+  const [exerciseMasters, setExerciseMasters] = useState<ExerciseMaster[]>([]);
   const [saved, setSaved] = useState(false);
+  const [videoModal, setVideoModal] = useState<string | null>(null);
 
   useEffect(() => {
-    if (user) {
-      loadDataFromFirestore(user.uid).then((data) => {
-        const names = new Set<string>();
-        data.workouts.forEach((w) => w.exercises.forEach((e) => names.add(e.name)));
-        setKnownExercises(Array.from(names));
-      });
-    }
+    if (!user) return;
+    loadDataFromFirestore(user.uid).then((data) => {
+      const names = new Set<string>();
+      data.workouts.forEach((w) => w.exercises.forEach((e) => names.add(e.name)));
+      setKnownExercises(Array.from(names));
+    });
+    loadExerciseMasters(user.uid).then(setExerciseMasters);
   }, [user]);
+
+  const currentMaster = exerciseMasters.find((m) => m.name === exerciseName);
+  const currentVideoId = currentMaster?.videoUrl ? extractVideoId(currentMaster.videoUrl) : null;
 
   const addSet = () => setSets([...sets, { weight: 0, reps: 0 }]);
 
@@ -63,23 +67,45 @@ export default function Workout() {
     }, 800);
   };
 
+  const allChipNames = new Set([
+    ...knownExercises,
+    ...exerciseMasters.map((m) => m.name),
+  ]);
+  const chipNames = Array.from(allChipNames);
+
+  const hasVideo = (name: string) => {
+    const m = exerciseMasters.find((e) => e.name === name);
+    return m?.videoUrl ? extractVideoId(m.videoUrl) : null;
+  };
+
   return (
     <div className={styles.page}>
       <h1 className={styles.title}>記録</h1>
 
       <label className={styles.label}>種目名</label>
-      <input
-        className={styles.input}
-        value={exerciseName}
-        onChange={(e) => setExerciseName(e.target.value)}
-        placeholder="例: ベンチプレス"
-      />
+      <div className={styles.exerciseRow}>
+        <input
+          className={styles.input}
+          value={exerciseName}
+          onChange={(e) => setExerciseName(e.target.value)}
+          placeholder="例: ベンチプレス"
+        />
+        {currentVideoId && (
+          <button
+            className={styles.videoIconBtn}
+            onClick={() => setVideoModal(currentVideoId)}
+            title="フォーム動画を見る"
+          >
+            🎬
+          </button>
+        )}
+      </div>
 
-      {knownExercises.length > 0 && (
+      {chipNames.length > 0 && (
         <div className={styles.chips}>
-          {knownExercises.map((name) => (
+          {chipNames.map((name) => (
             <button key={name} className={styles.chip} onClick={() => setExerciseName(name)}>
-              {name}
+              {hasVideo(name) ? '🎬 ' : ''}{name}
             </button>
           ))}
         </div>
@@ -122,6 +148,25 @@ export default function Workout() {
         onClick={handleSave}>
         {saved ? '✓ 保存しました！' : '保存する'}
       </button>
+
+      {/* 動画モーダル */}
+      {videoModal && (
+        <div className={styles.videoOverlay} onClick={() => setVideoModal(null)}>
+          <div className={styles.videoModal} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.videoModalHeader}>
+              <span className={styles.videoModalTitle}>{exerciseName}</span>
+              <button className={styles.videoCloseBtn} onClick={() => setVideoModal(null)}>✕</button>
+            </div>
+            <iframe
+              className={styles.videoIframe}
+              src={`https://www.youtube.com/embed/${videoModal}?autoplay=1`}
+              title={exerciseName}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

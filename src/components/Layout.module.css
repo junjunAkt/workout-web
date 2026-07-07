@@ -52,7 +52,8 @@
 }
 
 .tabLabel {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 500;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
 }
