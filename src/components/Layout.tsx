@@ -8,11 +8,12 @@ import styles from './Layout.module.css';
 
 // ナビゲーションのタブ定義
 const navItems = [
-  { to: '/',         label: 'ホーム',       icon: '🏠' },
-  { to: '/workout',  label: '記録',         icon: '➕' },
-  { to: '/calendar', label: 'カレンダー',   icon: '📅' },
-  { to: '/progress', label: '進捗',         icon: '📈' },
-  { to: '/protein',  label: 'プロテイン',   icon: '💊' },
+  { to: '/',          label: 'ホーム',     icon: '🏠' },
+  { to: '/workout',   label: '記録',       icon: '➕' },
+  { to: '/exercises', label: '種目',       icon: '🏋️' },
+  { to: '/calendar',  label: 'カレンダー', icon: '📅' },
+  { to: '/progress',  label: '進捗',       icon: '📈' },
+  { to: '/protein',   label: 'プロテイン', icon: '💊' },
 ];
 
 export default function Layout() {

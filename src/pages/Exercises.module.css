@@ -1,0 +1,224 @@
+.page {
+  padding: 24px 16px;
+}
+
+.title {
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 16px;
+}
+
+/* フィルター */
+.filterRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+
+.filterChip {
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--surface);
+  color: var(--text-secondary);
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.filterChipActive {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* セクション */
+.section {
+  margin-bottom: 20px;
+}
+
+.sectionTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.card {
+  display: flex;
+  align-items: center;
+  background: var(--surface);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.cardMain {
+  flex: 1;
+  padding: 12px 14px;
+  text-align: left;
+  background: transparent;
+  min-width: 0;
+}
+
+.cardName {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cardMeta {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.deleteBtn {
+  padding: 12px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.deleteBtn:active {
+  color: #EF4444;
+}
+
+.empty {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 40px 0;
+  font-size: 14px;
+}
+
+.addBtn {
+  width: 100%;
+  padding: 14px;
+  background: none;
+  border: 1.5px dashed var(--accent);
+  color: var(--accent);
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 12px;
+  margin-top: 8px;
+}
+
+/* モーダル */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 200;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.modal {
+  background: #fff;
+  border-radius: 20px 20px 0 0;
+  width: 100%;
+  max-width: 480px;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 24px 20px 32px;
+  animation: slideUp 0.25s ease-out;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.modalTitle {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.formGroup {
+  margin-bottom: 16px;
+}
+
+.label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  font-size: 15px;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.input:focus {
+  border-color: var(--accent);
+}
+
+.categoryPicker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.categoryBtn {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--surface);
+  color: var(--text-secondary);
+  transition: all 0.15s;
+}
+
+.categoryBtnActive {
+  background: var(--accent);
+  color: #fff;
+}
+
+.submitBtn {
+  width: 100%;
+  padding: 14px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  border-radius: 12px;
+  margin-top: 8px;
+}
+
+.submitBtn:disabled {
+  background: #ccc;
+}
+
+.cancelBtn {
+  width: 100%;
+  padding: 12px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 12px;
+  margin-top: 8px;
+}
