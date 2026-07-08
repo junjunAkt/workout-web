@@ -10,6 +10,7 @@ export type Book = {
   genre?: string;
   totalPages?: number;
   coverUrl?: string;
+  isbn?: string;
   rating?: 1 | 2 | 3 | 4 | 5;
   status: 'reading' | 'finished';
   createdAt: number;
@@ -23,6 +24,7 @@ export type BookSearchResult = {
   pageCount?: number;
   coverUrl?: string;
   description?: string;
+  isbn?: string;
 };
 
 // 1回の読書セッション

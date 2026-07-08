@@ -1,7 +1,8 @@
 import type { Book, ReadingSession } from './reading-types';
 import type { ReadingStorage } from './reading-storage';
 
-const SCHEMA_VERSION = '1';
+const SCHEMA_VERSION = '2';
+const SUPPORTED_VERSIONS = ['1', '2'];
 
 type BackupData = {
   schemaVersion: string;
@@ -45,6 +46,9 @@ function validateBackup(data: unknown): BackupData {
   const obj = data as Record<string, unknown>;
   if (!obj.schemaVersion || typeof obj.schemaVersion !== 'string') {
     throw new Error('schemaVersion が見つかりません');
+  }
+  if (!SUPPORTED_VERSIONS.includes(obj.schemaVersion)) {
+    throw new Error(`未対応のバージョンです: ${obj.schemaVersion}`);
   }
   if (!Array.isArray(obj.books)) {
     throw new Error('books データが見つかりません');
