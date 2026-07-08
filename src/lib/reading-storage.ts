@@ -23,6 +23,9 @@ export interface ReadingStorage {
   getActiveTimer(): Promise<ActiveTimer | null>;
   saveActiveTimer(timer: ActiveTimer): Promise<void>;
   clearActiveTimer(): Promise<void>;
+
+  getAllData(): Promise<{ books: Book[]; sessions: ReadingSession[] }>;
+  replaceAllData(books: Book[], sessions: ReadingSession[]): Promise<void>;
 }
 
 // localStorageのキー
@@ -104,6 +107,18 @@ export class LocalStorageAdapter implements ReadingStorage {
 
   async clearActiveTimer(): Promise<void> {
     localStorage.removeItem(TIMER_KEY);
+  }
+
+  async getAllData(): Promise<{ books: Book[]; sessions: ReadingSession[] }> {
+    return {
+      books: await this.getBooks(),
+      sessions: await this.getSessions(),
+    };
+  }
+
+  async replaceAllData(books: Book[], sessions: ReadingSession[]): Promise<void> {
+    localStorage.setItem(BOOKS_KEY, JSON.stringify(books));
+    localStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions));
   }
 }
 
@@ -217,6 +232,18 @@ export class FirestoreReadingAdapter implements ReadingStorage {
   async clearActiveTimer(): Promise<void> {
     const data = await this.loadAll();
     data.activeTimer = null;
+    await this.saveAll(data);
+  }
+
+  async getAllData(): Promise<{ books: Book[]; sessions: ReadingSession[] }> {
+    const data = await this.loadAll();
+    return { books: data.books, sessions: data.sessions };
+  }
+
+  async replaceAllData(books: Book[], sessions: ReadingSession[]): Promise<void> {
+    const data = await this.loadAll();
+    data.books = books;
+    data.sessions = sessions;
     await this.saveAll(data);
   }
 }

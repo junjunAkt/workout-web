@@ -15,6 +15,12 @@ import {
 import type { Book, ReadingSession, ActiveTimer } from '../lib/reading-types';
 import type { ReadingStorage } from '../lib/reading-storage';
 import { createReadingStorage } from '../lib/reading-storage';
+import {
+  exportData,
+  importReplace,
+  importMerge,
+} from '../lib/reading-backup';
+import type { ImportResult } from '../lib/reading-backup';
 import { useAuth } from './AuthContext';
 
 type ReadingContextType = {
@@ -40,6 +46,10 @@ type ReadingContextType = {
   getAllSessions(): Promise<ReadingSession[]>;
   updateSession(session: ReadingSession): Promise<void>;
   deleteSession(id: string): Promise<void>;
+
+  handleExport(): Promise<void>;
+  handleImportReplace(file: File): Promise<ImportResult>;
+  handleImportMerge(file: File): Promise<ImportResult>;
 };
 
 const ReadingContext = createContext<ReadingContextType | null>(null);
@@ -176,6 +186,37 @@ export function ReadingProvider({ children }: { children: React.ReactNode }) {
     [storage],
   );
 
+  const reloadData = useCallback(async () => {
+    const [loadedBooks, timer] = await Promise.all([
+      storage.getBooks(),
+      storage.getActiveTimer(),
+    ]);
+    setBooks(loadedBooks);
+    setActiveTimer(timer);
+  }, [storage]);
+
+  const handleExport = useCallback(async () => {
+    await exportData(storage);
+  }, [storage]);
+
+  const handleImportReplace = useCallback(
+    async (file: File) => {
+      const result = await importReplace(storage, file);
+      await reloadData();
+      return result;
+    },
+    [storage, reloadData],
+  );
+
+  const handleImportMerge = useCallback(
+    async (file: File) => {
+      const result = await importMerge(storage, file);
+      await reloadData();
+      return result;
+    },
+    [storage, reloadData],
+  );
+
   return (
     <ReadingContext.Provider
       value={{
@@ -192,6 +233,9 @@ export function ReadingProvider({ children }: { children: React.ReactNode }) {
         getAllSessions,
         updateSession,
         deleteSession,
+        handleExport,
+        handleImportReplace,
+        handleImportMerge,
       }}
     >
       {children}
