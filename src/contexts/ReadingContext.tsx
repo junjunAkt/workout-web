@@ -34,6 +34,7 @@ type ReadingContextType = {
     genre?: string;
     totalPages?: number;
     coverUrl?: string;
+    isbn?: string;
   }): Promise<Book>;
   updateBook(book: Book): Promise<void>;
   deleteBook(id: string): Promise<void>;
@@ -97,6 +98,7 @@ export function ReadingProvider({ children }: { children: React.ReactNode }) {
       genre?: string;
       totalPages?: number;
       coverUrl?: string;
+      isbn?: string;
     }) => {
       const book: Book = {
         ...data,
