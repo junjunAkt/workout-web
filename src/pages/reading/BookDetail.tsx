@@ -3,10 +3,12 @@
  * セッション履歴・集計・評価・ステータス切替を表示する
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useReading } from '../../contexts/ReadingContext';
 import type { ReadingSession } from '../../lib/reading-types';
+import { calculateSpeedInfo, calculatePrediction } from '../../lib/reading-speed';
+import type { SpeedInfo, PredictionInfo } from '../../lib/reading-speed';
 import styles from './BookDetail.module.css';
 
 // 秒数を読みやすい形式にフォーマット
@@ -77,6 +79,19 @@ export default function BookDetail() {
     book.totalPages && totalPages > 0
       ? Math.min(100, Math.round((totalPages / book.totalPages) * 100))
       : null;
+
+  // 読書速度・読了予測
+  const speedInfo: SpeedInfo = useMemo(
+    () => calculateSpeedInfo(sessions),
+    [sessions],
+  );
+  const prediction: PredictionInfo | null = useMemo(
+    () =>
+      book.totalPages && book.status === 'reading'
+        ? calculatePrediction(book.totalPages, sessions, speedInfo)
+        : null,
+    [book.totalPages, book.status, sessions, speedInfo],
+  );
 
   // ソート済みセッション
   const sortedSessions = [...sessions].sort((a, b) =>
@@ -184,7 +199,40 @@ export default function BookDetail() {
             </div>
           </div>
         )}
+        {speedInfo.effectiveSpeed != null && (
+          <div className={styles.statCard}>
+            <div className={styles.statValue}>{speedInfo.effectiveSpeed}</div>
+            <div className={styles.statLabel}>p/時間</div>
+          </div>
+        )}
       </div>
+
+      {/* 読了予測 */}
+      {prediction ? (
+        <div className={styles.predictionCard}>
+          <div className={styles.predictionText}>
+            このペースならあと約
+            <strong>
+              {prediction.estimatedHours > 0
+                ? `${prediction.estimatedHours}時間${prediction.estimatedMinutes}分`
+                : `${prediction.estimatedMinutes}分`}
+            </strong>
+            で読み終わります
+          </div>
+          <div className={styles.predictionMeta}>
+            残り{prediction.remainingPages}ページ（{book.totalPages}p中 p.{prediction.lastPageRead}まで読了）
+            {speedInfo.recentSpeed != null && ` / 直近速度: ${speedInfo.recentSpeed}p/時間`}
+          </div>
+        </div>
+      ) : book.status === 'reading' && !book.totalPages ? (
+        <div className={styles.predictionHint}>
+          全体ページ数を設定すると読了予測が表示されます
+        </div>
+      ) : book.status === 'reading' && speedInfo.effectiveSpeed == null ? (
+        <div className={styles.predictionHint}>
+          ページ範囲を記録すると読書速度と読了予測が表示されます
+        </div>
+      ) : null}
 
       {/* セッション一覧 */}
       <div className={styles.sectionHeader}>

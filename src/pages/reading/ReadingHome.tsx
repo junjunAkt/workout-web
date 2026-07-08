@@ -3,11 +3,12 @@
  * 本の一覧・ダッシュボード・読書開始ボタン・タイマー・セッション記録を管理する
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useReading } from '../../contexts/ReadingContext';
 import type { Book, BookSearchResult } from '../../lib/reading-types';
 import { searchBooks } from '../../lib/book-search';
+import { calculateSpeedInfo } from '../../lib/reading-speed';
 import {
   loadShortcutSettings,
   saveShortcutSettings,
@@ -47,6 +48,9 @@ export default function ReadingHome() {
     saveSession,
     getAllSessions,
     getSessionsForBook,
+    handleExport,
+    handleImportReplace,
+    handleImportMerge,
   } = useReading();
   const navigate = useNavigate();
 
@@ -65,6 +69,11 @@ export default function ReadingHome() {
 
   // ダッシュボード集計用
   const [totalReadingTimeSec, setTotalReadingTimeSec] = useState(0);
+  const [overallSpeed, setOverallSpeed] = useState<number | null>(null);
+
+  // バックアップ
+  const [importMsg, setImportMsg] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // ショートカット設定
   const [shortcutSettings, setShortcutSettings] = useState<ShortcutSettings>(loadShortcutSettings);
@@ -105,6 +114,8 @@ export default function ReadingHome() {
       const sessions = await getAllSessions();
       const total = sessions.reduce((sum, s) => sum + s.durationSec, 0);
       setTotalReadingTimeSec(total);
+      const speed = calculateSpeedInfo(sessions);
+      setOverallSpeed(speed.effectiveSpeed);
     })();
   }, [getAllSessions, showSessionForm]);
 
@@ -182,6 +193,12 @@ export default function ReadingHome() {
           </div>
           <div className={styles.statLabel}>累計読書時間</div>
         </div>
+        {overallSpeed != null && (
+          <div className={styles.statCard}>
+            <div className={styles.statValue}>{overallSpeed}</div>
+            <div className={styles.statLabel}>p/時間</div>
+          </div>
+        )}
       </div>
 
       {/* 読書開始ボタン */}
@@ -327,6 +344,63 @@ export default function ReadingHome() {
           )}
         </div>
       )}
+
+      {/* バックアップ */}
+      <div className={styles.settingsSection}>
+        <div className={styles.settingsPanel}>
+          <div className={styles.settingsLabel} style={{ marginBottom: '12px' }}>
+            データのバックアップ
+          </div>
+          <button className={styles.backupBtn} onClick={handleExport}>
+            データをエクスポート
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".json"
+            style={{ display: 'none' }}
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              const mode = confirm(
+                '「OK」→ 既存データを置き換え\n「キャンセル」→ 既存データにマージ（追加のみ）',
+              )
+                ? 'replace'
+                : 'merge';
+              if (mode === 'replace' && !confirm('既存のデータは全て消えます。本当に置き換えますか？')) {
+                e.target.value = '';
+                return;
+              }
+              try {
+                const result =
+                  mode === 'replace'
+                    ? await handleImportReplace(file)
+                    : await handleImportMerge(file);
+                setImportMsg(
+                  `${result.booksCount}冊・${result.sessionsCount}セッションを${mode === 'replace' ? '読み込み' : '追加'}しました`,
+                );
+              } catch (err) {
+                setImportMsg(
+                  err instanceof Error ? err.message : 'インポートに失敗しました',
+                );
+              }
+              e.target.value = '';
+            }}
+          />
+          <button
+            className={styles.backupBtn}
+            style={{ marginTop: '8px' }}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            データをインポート
+          </button>
+          {importMsg && (
+            <div className={styles.settingsHint} style={{ marginTop: '8px' }}>
+              {importMsg}
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* セッション記録モーダル */}
       {showSessionForm && completedData && (
