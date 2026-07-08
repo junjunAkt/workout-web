@@ -24,11 +24,14 @@ export function saveShortcutSettings(settings: ShortcutSettings): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
 }
 
+export function getReturnUrl(): string {
+  return window.location.origin + '/reading';
+}
+
 export function triggerShortcut(settings: ShortcutSettings): void {
   if (!settings.enabled || !settings.shortcutName.trim()) return;
   const encoded = encodeURIComponent(settings.shortcutName.trim());
-  const returnUrl = encodeURIComponent(window.location.href);
-  const url = `shortcuts://x-callback-url/run-shortcut?name=${encoded}&x-success=${returnUrl}`;
+  const url = `shortcuts://run-shortcut?name=${encoded}`;
   window.location.href = url;
 }
 

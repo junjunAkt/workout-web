@@ -13,6 +13,7 @@ import {
   saveShortcutSettings,
   triggerShortcut,
   isIOS,
+  getReturnUrl,
 } from '../../lib/shortcut-settings';
 import type { ShortcutSettings } from '../../lib/shortcut-settings';
 import styles from './ReadingHome.module.css';
@@ -289,6 +290,20 @@ export default function ReadingHome() {
                 <div className={styles.settingsHint}>
                   iPhoneのショートカットアプリで作成した計測用ショートカットの名前を入力してください。
                   読書開始・終了時に自動で起動します。
+                </div>
+                <div className={styles.settingsHint} style={{ marginTop: '12px' }}>
+                  📌 ショートカット実行後に自動で戻るには、ショートカットの最後に「URLを開く」アクションを追加し、以下のURLを設定してください：
+                </div>
+                <div
+                  className={styles.input}
+                  style={{ marginTop: '6px', fontSize: '12px', wordBreak: 'break-all', cursor: 'pointer', background: '#E8F0EC' }}
+                  onClick={() => {
+                    navigator.clipboard.writeText(getReturnUrl());
+                    alert('コピーしました！');
+                  }}
+                >
+                  {getReturnUrl()}
+                  <span style={{ fontSize: '11px', color: '#5B7B6A', marginLeft: '6px' }}>（タップでコピー）</span>
                 </div>
               </div>
             </div>
