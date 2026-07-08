@@ -71,6 +71,19 @@ export default function ReadingHome() {
   const [showSettings, setShowSettings] = useState(false);
   const iosDevice = isIOS();
 
+  // ショートカットから戻った時にセッション記録画面を復元
+  useEffect(() => {
+    const pending = localStorage.getItem('pending_reading_session');
+    if (pending) {
+      try {
+        const data = JSON.parse(pending);
+        setCompletedData(data);
+        setShowSessionForm(true);
+      } catch { /* ignore */ }
+      localStorage.removeItem('pending_reading_session');
+    }
+  }, []);
+
   // タイマーの更新
   useEffect(() => {
     if (!activeTimer) {
@@ -112,12 +125,16 @@ export default function ReadingHome() {
     [startTimer, shortcutSettings],
   );
 
-  // 読書終了ハンドラー（ショートカットを感想入力の前に起動）
+  // 読書終了ハンドラー（タイマー停止→データ保存→ショートカット起動）
   const handleStopReading = useCallback(async () => {
-    triggerShortcut(shortcutSettings);
     const data = await stopTimer();
-    setCompletedData(data);
-    setShowSessionForm(true);
+    if (data && shortcutSettings.enabled && shortcutSettings.shortcutName.trim()) {
+      localStorage.setItem('pending_reading_session', JSON.stringify(data));
+      triggerShortcut(shortcutSettings);
+    } else {
+      setCompletedData(data);
+      setShowSessionForm(true);
+    }
   }, [stopTimer, shortcutSettings]);
 
   // ローディング
@@ -323,10 +340,12 @@ export default function ReadingHome() {
             await saveSession(data);
             setShowSessionForm(false);
             setCompletedData(null);
+            localStorage.removeItem('pending_reading_session');
           }}
           onClose={() => {
             setShowSessionForm(false);
             setCompletedData(null);
+            localStorage.removeItem('pending_reading_session');
           }}
         />
       )}
