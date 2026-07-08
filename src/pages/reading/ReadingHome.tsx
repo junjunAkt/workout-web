@@ -8,6 +8,13 @@ import { useNavigate } from 'react-router-dom';
 import { useReading } from '../../contexts/ReadingContext';
 import type { Book, BookSearchResult } from '../../lib/reading-types';
 import { searchBooks } from '../../lib/book-search';
+import {
+  loadShortcutSettings,
+  saveShortcutSettings,
+  triggerShortcut,
+  isIOS,
+} from '../../lib/shortcut-settings';
+import type { ShortcutSettings } from '../../lib/shortcut-settings';
 import styles from './ReadingHome.module.css';
 
 type Filter = 'all' | 'reading' | 'finished';
@@ -58,6 +65,11 @@ export default function ReadingHome() {
   // ダッシュボード集計用
   const [totalReadingTimeSec, setTotalReadingTimeSec] = useState(0);
 
+  // ショートカット設定
+  const [shortcutSettings, setShortcutSettings] = useState<ShortcutSettings>(loadShortcutSettings);
+  const [showSettings, setShowSettings] = useState(false);
+  const iosDevice = isIOS();
+
   // タイマーの更新
   useEffect(() => {
     if (!activeTimer) {
@@ -94,16 +106,18 @@ export default function ReadingHome() {
     async (bookId: string) => {
       await startTimer(bookId);
       setShowBookSelector(false);
+      triggerShortcut(shortcutSettings);
     },
-    [startTimer],
+    [startTimer, shortcutSettings],
   );
 
-  // 読書終了ハンドラー
+  // 読書終了ハンドラー（ショートカットを感想入力の前に起動）
   const handleStopReading = useCallback(async () => {
+    triggerShortcut(shortcutSettings);
     const data = await stopTimer();
     setCompletedData(data);
     setShowSessionForm(true);
-  }, [stopTimer]);
+  }, [stopTimer, shortcutSettings]);
 
   // ローディング
   if (loading) {
@@ -228,9 +242,58 @@ export default function ReadingHome() {
             const book = await addBook(data);
             setShowBookForm(false);
             await startTimer(book.id);
+            triggerShortcut(shortcutSettings);
           }}
           onClose={() => setShowBookForm(false)}
         />
+      )}
+
+      {/* 設定（iOSのみ） */}
+      {iosDevice && (
+        <div className={styles.settingsSection}>
+          <button
+            className={styles.settingsToggle}
+            onClick={() => setShowSettings(!showSettings)}
+          >
+            {showSettings ? '▼ 設定を閉じる' : '⚙️ ショートカット連携設定'}
+          </button>
+          {showSettings && (
+            <div className={styles.settingsPanel}>
+              <div className={styles.settingsRow}>
+                <span className={styles.settingsLabel}>連携を有効にする</span>
+                <label className={styles.toggle}>
+                  <input
+                    type="checkbox"
+                    checked={shortcutSettings.enabled}
+                    onChange={(e) => {
+                      const updated = { ...shortcutSettings, enabled: e.target.checked };
+                      setShortcutSettings(updated);
+                      saveShortcutSettings(updated);
+                    }}
+                  />
+                  <span className={styles.toggleSlider} />
+                </label>
+              </div>
+              <div className={styles.formGroup}>
+                <label className={styles.label}>計測用ショートカット名</label>
+                <input
+                  className={styles.input}
+                  value={shortcutSettings.shortcutName}
+                  onChange={(e) => {
+                    const updated = { ...shortcutSettings, shortcutName: e.target.value };
+                    setShortcutSettings(updated);
+                    saveShortcutSettings(updated);
+                  }}
+                  placeholder="例: 読書タイマー"
+                />
+                <div className={styles.settingsHint}>
+                  iPhoneのショートカットアプリで作成した計測用ショートカットの名前を入力してください。
+                  読書開始・終了時に自動で起動します。
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       )}
 
       {/* セッション記録モーダル */}
