@@ -5,7 +5,7 @@
 
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { initializeFirestore } from 'firebase/firestore';
 
 // Firebase の設定値（Firebaseコンソールで確認できる値）
 const firebaseConfig = {
@@ -20,8 +20,10 @@ const firebaseConfig = {
 // Firebase アプリを初期化
 const app = initializeApp(firebaseConfig);
 
-// Firestore データベース
-export const db = getFirestore(app);
+// Firestore データベース（undefinedプロパティを無視する設定）
+export const db = initializeFirestore(app, {
+  ignoreUndefinedProperties: true,
+});
 
 // Authentication（ログイン機能）
 export const auth = getAuth(app);
