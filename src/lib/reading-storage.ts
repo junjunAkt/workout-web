@@ -224,15 +224,21 @@ export class FirestoreReadingAdapter implements ReadingStorage {
   }
 
   async saveActiveTimer(timer: ActiveTimer): Promise<void> {
-    const data = await this.loadAll();
-    data.activeTimer = timer;
-    await this.saveAll(data);
+    try {
+      const ref = doc(db, 'readingUsers', this.userId);
+      await setDoc(ref, { activeTimer: timer }, { merge: true });
+    } catch (e) {
+      console.error('タイマー保存エラー', e);
+    }
   }
 
   async clearActiveTimer(): Promise<void> {
-    const data = await this.loadAll();
-    data.activeTimer = null;
-    await this.saveAll(data);
+    try {
+      const ref = doc(db, 'readingUsers', this.userId);
+      await setDoc(ref, { activeTimer: null }, { merge: true });
+    } catch (e) {
+      console.error('タイマークリアエラー', e);
+    }
   }
 
   async getAllData(): Promise<{ books: Book[]; sessions: ReadingSession[] }> {
