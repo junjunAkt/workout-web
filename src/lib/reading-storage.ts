@@ -129,6 +129,11 @@ type ReadingData = {
   activeTimer: ActiveTimer | null;
 };
 
+// undefinedを除去してFirestore互換のデータにする
+function clean<T>(data: T): T {
+  return JSON.parse(JSON.stringify(data));
+}
+
 // Firestore実装（ログイン時に使用、デバイス間同期対応）
 export class FirestoreReadingAdapter implements ReadingStorage {
   private userId: string;
@@ -137,30 +142,23 @@ export class FirestoreReadingAdapter implements ReadingStorage {
     this.userId = userId;
   }
 
-  private async loadAll(): Promise<ReadingData> {
-    try {
-      const ref = doc(db, 'readingUsers', this.userId);
-      const snap = await getDoc(ref);
-      if (!snap.exists()) return { books: [], sessions: [], activeTimer: null };
-      const data = snap.data() as ReadingData;
-      return {
-        books: data.books ?? [],
-        sessions: data.sessions ?? [],
-        activeTimer: data.activeTimer ?? null,
-      };
-    } catch (e) {
-      console.error('読書データ読み込みエラー', e);
-      return { books: [], sessions: [], activeTimer: null };
-    }
+  private docRef() {
+    return doc(db, 'readingUsers', this.userId);
   }
 
-  private async saveAll(data: ReadingData): Promise<void> {
-    try {
-      const ref = doc(db, 'readingUsers', this.userId);
-      await setDoc(ref, data);
-    } catch (e) {
-      console.error('読書データ保存エラー', e);
-    }
+  private async loadAll(): Promise<ReadingData> {
+    const snap = await getDoc(this.docRef());
+    if (!snap.exists()) return { books: [], sessions: [], activeTimer: null };
+    const data = snap.data() as ReadingData;
+    return {
+      books: data.books ?? [],
+      sessions: data.sessions ?? [],
+      activeTimer: data.activeTimer ?? null,
+    };
+  }
+
+  private async mergeField(field: Partial<ReadingData>): Promise<void> {
+    await setDoc(this.docRef(), clean(field), { merge: true });
   }
 
   async getBooks(): Promise<Book[]> {
@@ -181,13 +179,12 @@ export class FirestoreReadingAdapter implements ReadingStorage {
     } else {
       data.books.push(book);
     }
-    await this.saveAll(data);
+    await this.mergeField({ books: data.books });
   }
 
   async deleteBook(id: string): Promise<void> {
     const data = await this.loadAll();
-    data.books = data.books.filter((b) => b.id !== id);
-    await this.saveAll(data);
+    await this.mergeField({ books: data.books.filter((b) => b.id !== id) });
   }
 
   async getSessions(bookId?: string): Promise<ReadingSession[]> {
@@ -200,7 +197,7 @@ export class FirestoreReadingAdapter implements ReadingStorage {
   async saveSession(session: ReadingSession): Promise<void> {
     const data = await this.loadAll();
     data.sessions.push(session);
-    await this.saveAll(data);
+    await this.mergeField({ sessions: data.sessions });
   }
 
   async updateSession(session: ReadingSession): Promise<void> {
@@ -208,14 +205,15 @@ export class FirestoreReadingAdapter implements ReadingStorage {
     const idx = data.sessions.findIndex((s) => s.id === session.id);
     if (idx >= 0) {
       data.sessions[idx] = session;
-      await this.saveAll(data);
+      await this.mergeField({ sessions: data.sessions });
     }
   }
 
   async deleteSession(id: string): Promise<void> {
     const data = await this.loadAll();
-    data.sessions = data.sessions.filter((s) => s.id !== id);
-    await this.saveAll(data);
+    await this.mergeField({
+      sessions: data.sessions.filter((s) => s.id !== id),
+    });
   }
 
   async getActiveTimer(): Promise<ActiveTimer | null> {
@@ -224,21 +222,11 @@ export class FirestoreReadingAdapter implements ReadingStorage {
   }
 
   async saveActiveTimer(timer: ActiveTimer): Promise<void> {
-    try {
-      const ref = doc(db, 'readingUsers', this.userId);
-      await setDoc(ref, { activeTimer: timer }, { merge: true });
-    } catch (e) {
-      console.error('タイマー保存エラー', e);
-    }
+    await this.mergeField({ activeTimer: timer });
   }
 
   async clearActiveTimer(): Promise<void> {
-    try {
-      const ref = doc(db, 'readingUsers', this.userId);
-      await setDoc(ref, { activeTimer: null }, { merge: true });
-    } catch (e) {
-      console.error('タイマークリアエラー', e);
-    }
+    await this.mergeField({ activeTimer: null });
   }
 
   async getAllData(): Promise<{ books: Book[]; sessions: ReadingSession[] }> {
@@ -247,10 +235,7 @@ export class FirestoreReadingAdapter implements ReadingStorage {
   }
 
   async replaceAllData(books: Book[], sessions: ReadingSession[]): Promise<void> {
-    const data = await this.loadAll();
-    data.books = books;
-    data.sessions = sessions;
-    await this.saveAll(data);
+    await setDoc(this.docRef(), clean({ books, sessions, activeTimer: null }));
   }
 }
 
