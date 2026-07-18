@@ -65,6 +65,7 @@ export default function ReadingHome() {
   const [overallSpeed, setOverallSpeed] = useState<number | null>(null);
 
   const [importMsg, setImportMsg] = useState('');
+  const [showImpressionExport, setShowImpressionExport] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [shortcutSettings, setShortcutSettings] = useState<ShortcutSettings>(loadShortcutSettings);
@@ -405,6 +406,18 @@ export default function ReadingHome() {
         />
       )}
 
+      {/* 感想エクスポートの本選択モーダル */}
+      {showImpressionExport && (
+        <ImpressionExportModal
+          books={books}
+          onSelect={async (bookId) => {
+            await handleExportImpressions(bookId);
+            setShowImpressionExport(false);
+          }}
+          onClose={() => setShowImpressionExport(false)}
+        />
+      )}
+
       {/* 設定（iOSのみ） */}
       {iosDevice && (
         <div className={styles.settingsSection}>
@@ -487,7 +500,7 @@ export default function ReadingHome() {
           <button
             className={styles.backupBtn}
             style={{ marginTop: '8px' }}
-            onClick={handleExportImpressions}
+            onClick={() => setShowImpressionExport(true)}
           >
             感想をエクスポート
           </button>
@@ -601,6 +614,53 @@ function BookSelectorModal({
         <button className={styles.newBookBtn} onClick={onAddNew}>
           ＋ 新しい本を登録して読む
         </button>
+        <button className={styles.cancelBtn} onClick={onClose}>
+          キャンセル
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ===== 感想エクスポートの本選択モーダル =====
+function ImpressionExportModal({
+  books,
+  onSelect,
+  onClose,
+}: {
+  books: Book[];
+  onSelect: (bookId?: string) => void;
+  onClose: () => void;
+}) {
+  return (
+    <div className={styles.overlay} onClick={onClose}>
+      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+        <div className={styles.modalTitle}>どの本の感想を出力しますか？</div>
+        <div className={styles.selectorList}>
+          <button
+            className={styles.selectorItem}
+            onClick={() => onSelect(undefined)}
+          >
+            <div className={styles.bookIcon}>📚</div>
+            <div className={styles.bookInfo}>
+              <div className={styles.bookTitle}>すべての本</div>
+              <div className={styles.bookMeta}>全ての感想をまとめて出力</div>
+            </div>
+          </button>
+          {books.map((book) => (
+            <button
+              key={book.id}
+              className={styles.selectorItem}
+              onClick={() => onSelect(book.id)}
+            >
+              <div className={styles.bookIcon}>📖</div>
+              <div className={styles.bookInfo}>
+                <div className={styles.bookTitle}>{book.title}</div>
+                <div className={styles.bookMeta}>{book.author || '著者未設定'}</div>
+              </div>
+            </button>
+          ))}
+        </div>
         <button className={styles.cancelBtn} onClick={onClose}>
           キャンセル
         </button>

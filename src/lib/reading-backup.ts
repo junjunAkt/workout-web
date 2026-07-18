@@ -39,10 +39,15 @@ export async function exportData(storage: ReadingStorage): Promise<void> {
   URL.revokeObjectURL(url);
 }
 
-function formatImpressionsFilename(): string {
+function formatImpressionsFilename(bookTitle?: string): string {
   const d = new Date();
   const pad = (n: number) => String(n).padStart(2, '0');
   const stamp = `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}`;
+  if (bookTitle) {
+    // ファイル名に使えない文字を除去
+    const safe = bookTitle.replace(/[\\/:*?"<>|]/g, '').slice(0, 40);
+    return `感想-${safe}-${stamp}.md`;
+  }
   return `reading-impressions-${stamp}.md`;
 }
 
@@ -59,12 +64,24 @@ function formatMinutes(sec: number): string {
 }
 
 // 本ごとに感想をまとめたMarkdownを生成してダウンロードする
-export async function exportImpressions(storage: ReadingStorage): Promise<void> {
+// bookIdを指定するとその本の感想だけを出力する
+export async function exportImpressions(
+  storage: ReadingStorage,
+  bookId?: string,
+): Promise<void> {
   const { books, sessions } = await storage.getAllData();
 
-  const lines: string[] = ['# 読書の感想まとめ', ''];
+  const targetBooks = bookId
+    ? books.filter((b) => b.id === bookId)
+    : books;
 
-  for (const book of [...books].sort((a, b) => a.createdAt - b.createdAt)) {
+  const singleBook = bookId ? targetBooks[0] : undefined;
+  const heading = singleBook
+    ? `# 読書の感想まとめ - ${singleBook.title}`
+    : '# 読書の感想まとめ';
+  const lines: string[] = [heading, ''];
+
+  for (const book of [...targetBooks].sort((a, b) => a.createdAt - b.createdAt)) {
     const bookSessions = sessions
       .filter((s) => s.bookId === book.id)
       .sort((a, b) => a.startTime - b.startTime);
@@ -98,7 +115,7 @@ export async function exportImpressions(storage: ReadingStorage): Promise<void> 
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = formatImpressionsFilename();
+  a.download = formatImpressionsFilename(singleBook?.title);
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);

@@ -50,7 +50,7 @@ type ReadingContextType = {
   deleteSession(id: string): Promise<void>;
 
   handleExport(): Promise<void>;
-  handleExportImpressions(): Promise<void>;
+  handleExportImpressions(bookId?: string): Promise<void>;
   handleImportReplace(file: File): Promise<ImportResult>;
   handleImportMerge(file: File): Promise<ImportResult>;
 };
@@ -203,9 +203,12 @@ export function ReadingProvider({ children }: { children: React.ReactNode }) {
     await exportData(storage);
   }, [storage]);
 
-  const handleExportImpressions = useCallback(async () => {
-    await exportImpressions(storage);
-  }, [storage]);
+  const handleExportImpressions = useCallback(
+    async (bookId?: string) => {
+      await exportImpressions(storage, bookId);
+    },
+    [storage],
+  );
 
   const handleImportReplace = useCallback(
     async (file: File) => {
