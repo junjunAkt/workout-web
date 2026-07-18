@@ -39,6 +39,72 @@ export async function exportData(storage: ReadingStorage): Promise<void> {
   URL.revokeObjectURL(url);
 }
 
+function formatImpressionsFilename(): string {
+  const d = new Date();
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const stamp = `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}`;
+  return `reading-impressions-${stamp}.md`;
+}
+
+function formatDate(ts: number): string {
+  const d = new Date(ts);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())}`;
+}
+
+function formatMinutes(sec: number): string {
+  const m = Math.round(sec / 60);
+  if (m >= 60) return `${Math.floor(m / 60)}時間${m % 60}分`;
+  return `${m}分`;
+}
+
+// 本ごとに感想をまとめたMarkdownを生成してダウンロードする
+export async function exportImpressions(storage: ReadingStorage): Promise<void> {
+  const { books, sessions } = await storage.getAllData();
+
+  const lines: string[] = ['# 読書の感想まとめ', ''];
+
+  for (const book of [...books].sort((a, b) => a.createdAt - b.createdAt)) {
+    const bookSessions = sessions
+      .filter((s) => s.bookId === book.id)
+      .sort((a, b) => a.startTime - b.startTime);
+    const withImpression = bookSessions.filter((s) => s.impression.trim());
+    if (withImpression.length === 0) continue;
+
+    const author = book.author ? `（${book.author}）` : '';
+    lines.push(`## ${book.title}${author}`, '');
+
+    for (const s of withImpression) {
+      const pages =
+        s.pageFrom != null && s.pageTo != null
+          ? ` / p.${s.pageFrom}〜${s.pageTo}`
+          : '';
+      lines.push(
+        `### ${formatDate(s.startTime)}（${formatMinutes(s.durationSec)}${pages}）`,
+        '',
+        s.impression.trim(),
+        '',
+      );
+    }
+  }
+
+  if (lines.length <= 2) {
+    lines.push('（感想が記録されたセッションはまだありません）');
+  }
+
+  const blob = new Blob([lines.join('\n')], {
+    type: 'text/markdown;charset=utf-8',
+  });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = formatImpressionsFilename();
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
 function validateBackup(data: unknown): BackupData {
   if (!data || typeof data !== 'object') {
     throw new Error('無効なファイル形式です');
