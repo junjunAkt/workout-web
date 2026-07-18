@@ -44,6 +44,7 @@ export default function ReadingHome() {
     getAllSessions,
     getSessionsForBook,
     handleExport,
+    handleExportImpressions,
     handleImportReplace,
     handleImportMerge,
   } = useReading();
@@ -482,6 +483,13 @@ export default function ReadingHome() {
           </div>
           <button className={styles.backupBtn} onClick={handleExport}>
             データをエクスポート
+          </button>
+          <button
+            className={styles.backupBtn}
+            style={{ marginTop: '8px' }}
+            onClick={handleExportImpressions}
+          >
+            感想をエクスポート
           </button>
           <input
             ref={fileInputRef}

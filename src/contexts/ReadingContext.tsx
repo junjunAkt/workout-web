@@ -17,6 +17,7 @@ import type { ReadingStorage } from '../lib/reading-storage';
 import { createReadingStorage } from '../lib/reading-storage';
 import {
   exportData,
+  exportImpressions,
   importReplace,
   importMerge,
 } from '../lib/reading-backup';
@@ -49,6 +50,7 @@ type ReadingContextType = {
   deleteSession(id: string): Promise<void>;
 
   handleExport(): Promise<void>;
+  handleExportImpressions(): Promise<void>;
   handleImportReplace(file: File): Promise<ImportResult>;
   handleImportMerge(file: File): Promise<ImportResult>;
 };
@@ -201,6 +203,10 @@ export function ReadingProvider({ children }: { children: React.ReactNode }) {
     await exportData(storage);
   }, [storage]);
 
+  const handleExportImpressions = useCallback(async () => {
+    await exportImpressions(storage);
+  }, [storage]);
+
   const handleImportReplace = useCallback(
     async (file: File) => {
       const result = await importReplace(storage, file);
@@ -236,6 +242,7 @@ export function ReadingProvider({ children }: { children: React.ReactNode }) {
         updateSession,
         deleteSession,
         handleExport,
+        handleExportImpressions,
         handleImportReplace,
         handleImportMerge,
       }}
