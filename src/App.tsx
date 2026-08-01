@@ -14,6 +14,7 @@ import Home from './pages/Home';
 import Workout from './pages/Workout';
 import CalendarPage from './pages/CalendarPage';
 import Progress from './pages/Progress';
+import Recovery from './pages/Recovery';
 import Protein from './pages/Protein';
 import Exercises from './pages/Exercises';
 import ExerciseDetail from './pages/ExerciseDetail';
@@ -50,6 +51,7 @@ function WorkoutRoutes() {
         <Route path="/calendar" element={<CalendarPage />} />
         <Route path="/exercises"    element={<Exercises />} />
         <Route path="/exercises/:id" element={<ExerciseDetail />} />
+        <Route path="/recovery"      element={<Recovery />} />
         <Route path="/progress"      element={<Progress />} />
         <Route path="/protein"       element={<Protein />} />
       </Route>

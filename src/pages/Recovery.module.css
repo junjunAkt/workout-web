@@ -1,0 +1,183 @@
+/* 部位別リカバリー画面 */
+
+.page {
+  padding: 16px 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.loading {
+  text-align: center;
+  color: var(--text-secondary);
+  padding: 48px 0;
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* カード共通 */
+.card {
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 16px;
+}
+
+.cardTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+
+/* おすすめチップ */
+.chipRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(47, 168, 79, 0.12);
+  color: #2fa84f;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.restMessage {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+/* 人体図 */
+.bodyRow {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.bodySvg {
+  width: 45%;
+  max-width: 160px;
+  height: auto;
+}
+
+.svgLabel {
+  font-size: 8px;
+  font-weight: 700;
+  fill: #fff;
+  text-anchor: middle;
+  paint-order: stroke;
+  stroke: rgba(0, 0, 0, 0.35);
+  stroke-width: 2px;
+}
+
+.svgLabelDark {
+  font-size: 7px;
+  font-weight: 700;
+  fill: var(--text);
+  text-anchor: middle;
+}
+
+.svgCaption {
+  font-size: 9px;
+  fill: var(--text-secondary);
+  text-anchor: middle;
+}
+
+/* 凡例 */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.legendDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* 部位カード */
+.partList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.partCard {
+  background: var(--surface);
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+
+.partHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.partName {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.partState {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.partBody {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.partPercent {
+  min-width: 44px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  text-align: right;
+}
+
+.progressTrack {
+  flex: 1;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.partRemaining {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}

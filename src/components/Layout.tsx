@@ -12,6 +12,7 @@ const navItems = [
   { to: '/workout',   label: '記録',       icon: '➕' },
   { to: '/exercises', label: '種目',       icon: '🏋️' },
   { to: '/calendar',  label: 'カレンダー', icon: '📅' },
+  { to: '/recovery',  label: '回復',       icon: '🔋' },
   { to: '/progress',  label: '進捗',       icon: '📈' },
   { to: '/protein',   label: 'プロテイン', icon: '💊' },
 ];
