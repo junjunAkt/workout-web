@@ -19,4 +19,36 @@ export const MUSCLE_MAP: Record<TrackedPart, readonly Slug[]> = {
   脚: ['quadriceps', 'hamstring', 'calves', 'gluteal', 'adductors', 'tibialis'],
 };
 
+/**
+ * ライブラリが持つ全 slug。
+ * アセット側の各部位は自前の色（筋肉は '#3f3f3f' など）を持っていて、
+ * data に載っていない部位はその色で描かれてしまう。
+ * 「未実施はグレー」を成立させるため、全 slug を明示的に塗る用途で使う。
+ */
+export const ALL_BODY_SLUGS: readonly Slug[] = [
+  'abs',
+  'adductors',
+  'ankles',
+  'biceps',
+  'calves',
+  'chest',
+  'deltoids',
+  'feet',
+  'forearm',
+  'gluteal',
+  'hair',
+  'hamstring',
+  'hands',
+  'head',
+  'knees',
+  'lower-back',
+  'neck',
+  'obliques',
+  'quadriceps',
+  'tibialis',
+  'trapezius',
+  'triceps',
+  'upper-back',
+];
+
 export default MUSCLE_MAP;

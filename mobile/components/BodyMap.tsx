@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import Body, { type ExtendedBodyPart } from 'react-native-body-highlighter';
+import Body, { type ExtendedBodyPart, type Slug } from 'react-native-body-highlighter';
 
-import { MUSCLE_MAP } from '@/constants/muscleMap';
+import { ALL_BODY_SLUGS, MUSCLE_MAP } from '@/constants/muscleMap';
 import { colors, fontSize, radius, spacing } from '@/constants/theme';
 import type { PartRecovery } from '@/types';
 
@@ -15,7 +15,10 @@ type Props = {
 };
 
 /** 未実施の部位に使う塗り（グレーのまま） */
-const UNTRAINED_FILL = '#E4E8E6';
+const UNTRAINED_FILL = '#DFE4E1';
+
+/** 筋肉の輪郭が潰れないよう、塗りより少し濃いグレーで縁取る */
+const OUTLINE = '#B9C1BC';
 
 /**
  * 人体図。部位ごとの回復状態の色でハイライトする。
@@ -23,15 +26,21 @@ const UNTRAINED_FILL = '#E4E8E6';
  */
 export function BodyMap({ recoveries, side, onChangeSide }: Props) {
   const data = useMemo<ExtendedBodyPart[]>(() => {
-    const parts: ExtendedBodyPart[] = [];
+    // ライブラリのアセットは各部位に自前の色を持っているので、
+    // まず全部位をグレーで塗りつぶしてから、実施済みの部位だけ上書きする。
+    const colorBySlug = new Map<Slug, string>(
+      ALL_BODY_SLUGS.map((slug) => [slug, UNTRAINED_FILL]),
+    );
+
     for (const recovery of recoveries) {
-      // 未実施（rate === null）は色を渡さず、defaultFill のグレーのままにする
+      // 未実施（rate === null）はグレーのまま
       if (recovery.rate === null) continue;
       for (const slug of MUSCLE_MAP[recovery.part]) {
-        parts.push({ slug, color: recovery.state.color });
+        colorBySlug.set(slug, recovery.state.color);
       }
     }
-    return parts;
+
+    return [...colorBySlug].map<ExtendedBodyPart>(([slug, color]) => ({ slug, color }));
   }, [recoveries]);
 
   return (
@@ -60,9 +69,9 @@ export function BodyMap({ recoveries, side, onChangeSide }: Props) {
         side={side}
         gender="male"
         scale={1.05}
-        border={colors.border}
+        border={OUTLINE}
         defaultFill={UNTRAINED_FILL}
-        defaultStroke={colors.border}
+        defaultStroke={OUTLINE}
         defaultStrokeWidth={1}
       />
     </View>
