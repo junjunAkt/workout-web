@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { colors, fontSize, spacing } from '@/constants/theme';
@@ -11,11 +11,20 @@ type Props = {
   headerRight?: ReactNode;
   /** true なら ScrollView で包まない（FlatList を直接置きたい画面用） */
   scroll?: boolean;
+  /** キーボードで入力欄が隠れる画面（記録画面など）で true にする */
+  keyboardAvoiding?: boolean;
   children: ReactNode;
 };
 
 /** 全画面共通の外枠。ヘッダーの見た目をここに集約する。 */
-export function Screen({ title, subtitle, headerRight, scroll = true, children }: Props) {
+export function Screen({
+  title,
+  subtitle,
+  headerRight,
+  scroll = true,
+  keyboardAvoiding = false,
+  children,
+}: Props) {
   const header = (
     <View style={styles.header}>
       <View style={styles.headerTexts}>
@@ -26,21 +35,29 @@ export function Screen({ title, subtitle, headerRight, scroll = true, children }
     </View>
   );
 
+  const body = scroll ? (
+    <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+      {header}
+      {children}
+    </ScrollView>
+  ) : (
+    <View style={styles.plain}>
+      {header}
+      {children}
+    </View>
+  );
+
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
-      {scroll ? (
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
+      {keyboardAvoiding ? (
+        <KeyboardAvoidingView
+          style={styles.flex}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         >
-          {header}
-          {children}
-        </ScrollView>
+          {body}
+        </KeyboardAvoidingView>
       ) : (
-        <View style={styles.plain}>
-          {header}
-          {children}
-        </View>
+        body
       )}
     </SafeAreaView>
   );
@@ -50,6 +67,9 @@ const styles = StyleSheet.create({
   safe: {
     flex: 1,
     backgroundColor: colors.backgroundMuted,
+  },
+  flex: {
+    flex: 1,
   },
   scrollContent: {
     paddingHorizontal: spacing.lg,
