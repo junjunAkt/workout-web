@@ -1,0 +1,32 @@
+{
+  "expo": {
+    "name": "筋トレ記録",
+    "slug": "workout-log",
+    "scheme": "workoutlog",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#FFFFFF",
+    "plugins": ["expo-router"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.example.workoutlog"
+    },
+    "android": {
+      "package": "com.example.workoutlog",
+      "adaptiveIcon": {
+        "backgroundColor": "#E8F2EC",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro",
+      "output": "single"
+    }
+  }
+}
